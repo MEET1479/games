@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Face Hit — Boss Edition</title>
+<style>
+  :root {
+    --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
+    --neon1:#00eaff; --neon2:#ff00c3;
+    --btnGrad:linear-gradient(45deg,#ff0080,#ff8c00);
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;height:100%;overflow:hidden;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background: radial-gradient(1200px 800px at 70% -20%, #1d2b64 0%, #0f2027 60%) fixed,
+                linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)) fixed;
+  }
+  canvas{display:block;touch-action:manipulation}
+  .hud{position:absolute;inset:0;pointer-events:none}
+  .pill{
+    position:absolute;left:16px;padding:8px 12px;border-radius:12px;
+    background:rgba(0,0,0,.18);color:#fff;font-weight:700;letter-spacing:.4px;
+    text-shadow:0 0 10px #000;backdrop-filter:blur(2px);
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;pointer-events:auto;user-select:none;
+  }
+  .score{top:12px;font-size:20px}
+  .level{top:56px;font-size:16px;opacity:.95}
+  .hp{top:92px;width:240px}
+  .hp-bar{height:10px;border-radius:8px;background:rgba(255,255,255,.15);
+          overflow:hidden;margin-top:6px;box-shadow:inset 0 0 6px rgba(0,0,0,.6)}
+  .hp-fill{height:100%;width:100%;
+           background:linear-gradient(90deg,#55ff7f,#ffce00,#ff3b3b);
+           transition:width .12s ease-out;filter:saturate(1.2)}
+  .bossFlag{top:130px; display:flex; align-items:center; gap:8px}
+  .bossFlag .dot{width:10px;height:10px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 10px #ff3b3b}
+  .controls{
+    position:absolute;right:12px;bottom:12px;display:flex;gap:10px;pointer-events:auto;
+    flex-wrap:wrap;justify-content:flex-end
+  }
+  .uploader{
+    position:absolute;right:12px;top:12px;display:flex;gap:8px;align-items:center;
+    pointer-events:auto;color:#fff;background:rgba(0,0,0,.18);
+    border-radius:12px;padding:8px 10px;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset
+  }
+  .uploader input[type="file"]{display:none}
+  .uploader label{
+    padding:8px 12px;border-radius:10px;background:var(--btnGrad);color:#fff;font-weight:800;cursor:pointer
+  }
+  .uploader .toggle{
+    display:flex;align-items:center;gap:6px;font-size:13px
+  }
+  button{
+    padding:12px 16px;font-weight:800;border:none;border-radius:14px;cursor:pointer;color:#fff;
+    background:var(--btnGrad);
+    box-shadow:0 10px 25px rgba(0,0,0,.35),0 0 14px rgba(0,0,0,.2);
+    transition:transform .15s ease,opacity .15s ease,filter .15s ease
+  }
+  button:active{transform:translateY(1px) scale(.98)}
+  button[disabled]{opacity:.6;filter:grayscale(.2);cursor:not-allowed}
+  .toast{
+    position:absolute;left:50%;top:16px;transform:translateX(-50%);
+    padding:10px 16px;border-radius:12px;background:rgba(0,0,0,.35);
+    color:#fff;font-weight:800;letter-spacing:.4px;pointer-events:none;
+    text-shadow:0 0 8px #000;opacity:0;transition:opacity .25s ease;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset
+  }
+  .toast.show{opacity:1}
+  .center{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  .titleCard{
+    padding:24px 28px;border-radius:20px;background:rgba(0,0,0,.35);pointer-events:auto;color:#fff;text-align:center;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset
+  }
+  .titleCard h1{margin:0 0 6px;font-size:clamp(24px,4vw,38px);text-shadow:0 0 12px var(--neon2)}
+  .titleCard p{margin:6px 0 16px;opacity:.9}
+  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .small{font-size:12px;opacity:.8}
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="pill score">Score: <span id="scoreVal">0</span></div>
+    <div class="pill level">Level: <span id="levelVal">1</span></div>
+    <div class="pill hp">
+      Enemy HP
+      <div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div>
+    </div>
+    <div class="pill bossFlag" id="bossFlag" style="display:none">
+      <span class="dot"></span><span>Boss Fight</span>
+    </div>
+
+    <div class="uploader">
+      <input id="fileInput" type="file" accept="image/*">
+      <label for="fileInput">Upload Face</label>
+      <div class="toggle">
+        <input id="useUpload" type="checkbox">
+        <label for="useUpload">Use Uploaded</label>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="specialBtn">💥 Special (Ready)</button>
+      <button id="restartBtn">↻ Restart</button>
+      <button id="pauseBtn">⏸ Pause</button>
+    </div>
+
+    <div class="toast" id="toast">Ready!</div>
+
+    <div class="center" id="startOverlay">
+      <div class="titleCard">
+        <h1>Face Hit — Boss Edition</h1>
+        <p>Tap/click to damage. Boss every 10 levels. Special hurts normals, boss is immune.</p>
+        <div class="row">
+          <button id="startBtn">▶️ Start</button>
+          <button id="howBtn">❓ How to Play</button>
+        </div>
+        <p class="small">Tip: Upload your face and toggle “Use Uploaded”.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ===== Canvas & DPR =====
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function resize(){
+    const w = innerWidth, h = innerHeight;
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+    canvas.width = Math.floor(w*DPR); canvas.height = Math.floor(h*DPR);
+  }
+  addEventListener('resize', resize, {passive:true}); resize();
+
+  // ===== HUD =====
+  const scoreEl = document.getElementById('scoreVal');
+  const levelEl = document.getElementById('levelVal');
+  const hpFill = document.getElementById('hpFill');
+  const bossFlag = document.getElementById('bossFlag');
+  const specialBtn = document.getElementById('specialBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const startOverlay = document.getElementById('startOverlay');
+  const startBtn = document.getElementById('startBtn');
+  const howBtn = document.getElementById('howBtn');
+  const toast = document.getElementById('toast');
+  const fileInput = document.getElementById('fileInput');
+  const useUpload = document.getElementById('useUpload');
+
+  // ===== Audio =====
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function beep(freq=440,dur=0.08,type='square',gain=0.02){
+    try{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type=type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      g.gain.setValueAtTime(gain, audioCtx.currentTime);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime+dur);
+    }catch{}
+  }
+
+  // ===== Utils =====
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+  const dist=(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1);
+
+  // Camera shake
+  let shakeT=0, shakeMag=0;
+  function addShake(mag=8,time=200){ shakeMag=Math.max(shakeMag,mag); shakeT=Math.max(shakeT,time); }
+
+  // ===== Game State =====
+  let score=0, level=1, paused=true, lastTime=0;
+
+  const bossEmojis = ["👹","🤖","🐉","👺","👾","🦾","🧠","🦂","🦍","🐲","🦈","💀","🧟","🦅"];
+  let userImage=null; // HTMLImageElement
+
+  const base = {
+    r: Math.min(canvas.width, canvas.height)*0.08,
+    maxHP: 100,
+    speed: 170
+  };
+
+  const enemy = {
+    x: canvas.width*0.5, y: canvas.height*0.5,
+    r: base.r, maxHP: base.maxHP, hp: base.maxHP,
+    vx: rand(-1,1), vy: rand(-1,1),
+    isBoss:false, bossEmoji:""
+  };
+  function normalizeVel(){
+    const len=Math.hypot(enemy.vx, enemy.vy)||1;
+    const sp = base.speed*(1 + (level-1)*0.08);
+    enemy.vx=(enemy.vx/len)*sp;
+    enemy.vy=(enemy.vy/len)*sp;
+  }
+  normalizeVel();
+
+  function isBossLevel(lv){ return lv>0 && lv%10===0; }
+
+  function setupEnemyForLevel(){
+    enemy.isBoss = isBossLevel(level);
+    enemy.bossEmoji = enemy.isBoss ? bossEmojis[(Math.random()*bossEmojis.length)|0] : "";
+    const hpScale = enemy.isBoss ? 3.2 : 1 + (level-1)*0.25;
+    const sizeScale = enemy.isBoss ? 1.5 : 1 + (level-1)*0.05;
+
+    enemy.maxHP = Math.round(base.maxHP * hpScale);
+    enemy.hp = enemy.maxHP;
+    enemy.r = Math.max(52, base.r * sizeScale);
+
+    const ang = rand(0, Math.PI*2);
+    const sp = base.speed * (enemy.isBoss ? 1.1 : (1 + (level-1)*0.08));
+    enemy.vx = Math.cos(ang)*sp; enemy.vy = Math.sin(ang)*sp;
+
+    enemy.x = clamp(rand(enemy.r*2, canvas.width - enemy.r*2), enemy.r, canvas.width-enemy.r);
+    enemy.y = clamp(rand(enemy.r*2, canvas.height - enemy.r*2), enemy.r, canvas.height-enemy.r);
+
+    bossFlag.style.display = enemy.isBoss ? 'flex' : 'none';
+    updateHPBar();
+
+    // keep UI in sync
+    levelEl.textContent = level;
+    scoreEl.textContent = score;
+  }
+
+  function updateHPBar(){
+    const pct = clamp(enemy.hp/enemy.maxHP, 0, 1);
+    hpFill.style.width = (pct*100).toFixed(1)+'%';
+  }
+
+  // ===== Particles =====
+  const particles=[];
+  function spawnBurst(x,y,color='#00ffff',count=28,speed=240,life=0.7,size=[2,6]){
+    for(let i=0;i<count;i++){
+      const a=rand(0,Math.PI*2);
+      particles.push({
+        x,y,
+        vx:Math.cos(a)*rand(speed*0.3,speed),
+        vy:Math.sin(a)*rand(speed*0.3,speed),
+        r:rand(size[0],size[1]),
+        color, life, maxLife:life
+      });
+    }
+  }
+
+  // Orbital ambient particles (cool look)
+  const orbiters=[];
+  function resetOrbiters(){
+    orbiters.length=0;
+    const n = enemy.isBoss ? 40 : 24;
+    for(let i=0;i<n;i++){
+      orbiters.push({
+        angle: rand(0,Math.PI*2),
+        dist: rand(enemy.r*1.2, enemy.r*1.9),
+        spd: rand(0.6, 1.4) * (enemy.isBoss?1.2:1),
+        size: rand(1.5, enemy.isBoss?3.5:2.5),
+        hue: enemy.isBoss? rand(270, 320): rand(180, 210)
+      });
+    }
+  }
+
+  // Explosion shards
+  function shatter(x,y){
+    const segs = enemy.isBoss ? 85 : 55;
+    for(let i=0;i<segs;i++){
+      const a = (i/segs)*Math.PI*2;
+      const outward = a + rand(-0.4,0.4);
+      particles.push({
+        x: x + Math.cos(a)*rand(0, enemy.r*0.5),
+        y: y + Math.sin(a)*rand(0, enemy.r*0.5),
+        vx: Math.cos(outward) * rand(250, enemy.isBoss?700:560),
+        vy: Math.sin(outward) * rand(250, enemy.isBoss?700:560),
+        r: rand(3, enemy.isBoss?12:10),
+        color: i%5===0 ? '#ffffff' : (enemy.isBoss ? '#b96bff' : '#ff5555'),
+        life: rand(0.6, 1.2),
+        maxLife: 1.3
+      });
+    }
+    addShake(enemy.isBoss?30:22, enemy.isBoss?600:420);
+    if(navigator.vibrate) navigator.vibrate(enemy.isBoss?[20,40,20,40,20]:[12,40,12]);
+    beep(120, .06, 'sawtooth', .025);
+    beep(80, .14, 'square', .03);
+    beep(60, .2, 'square', .02);
+  }
+
+  // ===== Special Attack (Balanced) =====
+  let specialReady=true; const specialCD=6000;
+  function setSpecialBtn(remain){
+    if(specialReady){ specialBtn.disabled=false; specialBtn.textContent='💥 Special (Ready)'; }
+    else{ specialBtn.disabled=true; specialBtn.textContent=`💥 Special (${remain ?? Math.ceil(specialCD/1000)}s)`; }
+  }
+  function showToast(msg, t=1200){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(()=>toast.classList.remove('show'), t);
+  }
+  function useSpecial(){
+    if(!specialReady || paused) return;
+    if(enemy.isBoss){
+      // Boss immune
+      showToast('Boss is IMMUNE!');
+      addShake(10,200);
+      spawnBurst(enemy.x, enemy.y, '#ffd166', 16, 260, 0.5, [2,5]);
+      beep(300,.06,'triangle',.02);
+      // Still trigger cooldown (punish misuse)
+    } else {
+      const dmg = Math.ceil(enemy.maxHP * 0.5);
+      enemy.hp = clamp(enemy.hp - dmg, 0, enemy.maxHP);
+      updateHPBar();
+      spawnBurst(enemy.x, enemy.y, '#ffd166', 60, 520, 0.9, [3,8]);
+      addShake(18,380);
+      beep(500,.07,'square',.03);
+      if(enemy.hp <= 0) onEnemyDefeated(true);
+    }
+    // Start cooldown
+    specialReady=false; setSpecialBtn();
+    const start=performance.now();
+    const id=setInterval(()=>{
+      const t=performance.now()-start;
+      if(t>=specialCD){ clearInterval(id); specialReady=true; setSpecialBtn(); showToast('Special Ready!'); }
+      else setSpecialBtn(Math.ceil((specialCD - t)/1000));
+    },250);
+  }
+
+  // ===== Rendering =====
+  function drawAura(){
+    // outer soft glow
+    const grad = ctx.createRadialGradient(enemy.x, enemy.y, enemy.r*0.4, enemy.x, enemy.y, enemy.r*2.2);
+    if(enemy.isBoss){
+      grad.addColorStop(0, 'rgba(185,107,255,0.9)');
+      grad.addColorStop(1, 'rgba(185,107,255,0)');
+    }else{
+      grad.addColorStop(0, 'rgba(0,234,255,0.9)');
+      grad.addColorStop(1, 'rgba(0,234,255,0)');
+    }
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(enemy.x, enemy.y, enemy.r*2.2, 0, Math.PI*2); ctx.fill();
+
+    // orbiting sparks
+    for(const o of orbiters){
+      o.angle += 0.015*o.spd;
+      const ox = enemy.x + Math.cos(o.angle)*o.dist;
+      const oy = enemy.y + Math.sin(o.angle)*o.dist;
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${o.hue}, 90%, 60%, .9)`;
+      ctx.arc(ox, oy, o.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function drawEnemy(){
+    drawAura();
+
+    const hpPct = clamp(enemy.hp/enemy.maxHP,0,1);
+
+    // If user uploaded face and toggled
+    if(userImage && useUpload.checked){
+      const r = enemy.r;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(enemy.x, enemy.y, r, 0, Math.PI*2); ctx.clip();
+      // slight zoom based on boss
+      const scale = enemy.isBoss ? 1.15 : 1.05;
+      const iw = userImage.width, ih = userImage.height;
+      const aspect = iw/ih;
+      let sw, sh;
+      if(aspect>1){ sh=ih; sw=ih*aspect; } else { sw=iw; sh=iw/aspect; }
+      // Draw centered
+      const drawW = r*2*scale, drawH = r*2*scale;
+      ctx.drawImage(userImage, 0, 0, iw, ih, enemy.x-drawW/2, enemy.y-drawH/2, drawW, drawH);
+      ctx.restore();
+    } else if(enemy.isBoss && enemy.bossEmoji){
+      // Draw big emoji
+      ctx.save();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font = `${enemy.r*1.6}px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",system-ui`;
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 30*DPR;
+      ctx.fillText(enemy.bossEmoji, enemy.x, enemy.y);
+      ctx.restore();
+    } else {
+      // Default red face (with eyes and mouth)
+      ctx.save();
+      ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 45*DPR;
+      ctx.fillStyle = '#ff4444'; ctx.beginPath(); ctx.arc(enemy.x, enemy.y, enemy.r, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+
+      // Eyes
+      const eyeOffX = enemy.r*0.4, eyeOffY = enemy.r*0.25, eyeR=enemy.r*0.18;
+      ctx.fillStyle='#fff';
+      ctx.beginPath();
+      ctx.arc(enemy.x-eyeOffX, enemy.y-eyeOffY, eyeR, 0, Math.PI*2);
+      ctx.arc(enemy.x+eyeOffX, enemy.y-eyeOffY, eyeR, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle='#000';
+      const pupilR = eyeR*0.45;
+      ctx.beginPath();
+      ctx.arc(enemy.x-eyeOffX, enemy.y-eyeOffY, pupilR, 0, Math.PI*2);
+      ctx.arc(enemy.x+eyeOffX, enemy.y-eyeOffY, pupilR, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.strokeStyle='#000'; ctx.lineWidth = Math.max(3, enemy.r*0.06);
+      ctx.beginPath();
+      const mouthR = enemy.r*(0.35 + (1-hpPct)*0.12);
+      const start = Math.PI*(0.05 + (1-hpPct)*0.15);
+      const end   = Math.PI*(1 - (0.05 + (1-hpPct)*0.15));
+      ctx.arc(enemy.x, enemy.y+enemy.r*0.18, mouthR, start, end); ctx.stroke();
+
+      // cracks by damage
+      if(hpPct<0.8){
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0,0,0,'+(0.35+(0.8-hpPct))+')';
+        ctx.lineWidth = Math.max(1,1.5*DPR);
+        ctx.beginPath();
+        const lines = 4 + Math.round((0.8-hpPct)*8);
+        for(let i=0;i<lines;i++){
+          const a=(i/lines)*Math.PI*2 + (performance.now()/700);
+          const len = enemy.r*rand(0.25,0.75);
+          ctx.moveTo(enemy.x,enemy.y);
+          ctx.lineTo(enemy.x+Math.cos(a)*len, enemy.y+Math.sin(a)*len);
+        }
+        ctx.stroke(); ctx.restore();
+      }
+    }
+  }
+
+  // ===== Input (hit detection) =====
+  function handleHit(clientX, clientY){
+    if(paused) return;
+    const x=clientX*DPR, y=clientY*DPR;
+    const d=dist(x,y,enemy.x,enemy.y);
+    if(d<=enemy.r){
+      const centerBonus = 1 + (1 - (d/enemy.r))*0.8;
+      const dmg = Math.round(8 * centerBonus * (enemy.isBoss?0.9:1)); // a bit tougher bosses
+      enemy.hp = clamp(enemy.hp - dmg, 0, enemy.maxHP);
+      spawnBurst(x,y, enemy.isBoss?'#b96bff':'#00ffff', 20, 260, 0.5);
+      addShake(6 + (1 - d/enemy.r)*8, 160);
+      if(navigator.vibrate) navigator.vibrate(10);
+      beep(660,.05,'square',.02);
+      if(enemy.hp <= 0) onEnemyDefeated(false);
+      updateHPBar();
+      score += 1; scoreEl.textContent=score;
+    }
+  }
+  canvas.addEventListener('click', (e)=>{
+    const r=canvas.getBoundingClientRect();
+    handleHit(e.clientX - r.left, e.clientY - r.top);
+  });
+  canvas.addEventListener('touchstart', (e)=>{
+    const t=e.changedTouches[0]; const r=canvas.getBoundingClientRect();
+    handleHit(t.clientX - r.left, t.clientY - r.top);
+  }, {passive:true});
+
+  // ===== Enemy defeated -> next level or boss rotation =====
+  function onEnemyDefeated(bySpecial=false){
+    spawnBurst(enemy.x, enemy.y, bySpecial?'#ffd166':'#ff6666', enemy.isBoss?120:90, enemy.isBoss?620:520, 1.0, [3, enemy.isBoss?10:8]);
+    shatter(enemy.x, enemy.y);
+    score += enemy.isBoss ? 20 : 5;
+    showToast(enemy.isBoss ? 'Boss Down! +20' : (bySpecial ? 'Enemy Destroyed! +5' : 'Enemy Down! +5'));
+    level += 1;
+    setupEnemyForLevel();
+    resetOrbiters();
+  }
+
+  // ===== Loop =====
+  function step(ts){
+    const dt = Math.min(0.032, (ts - lastTime)/1000 || 0);
+    lastTime = ts;
+    if(!paused) update(dt);
+    draw();
+    requestAnimationFrame(step);
+  }
+
+  function update(dt){
+    // enemy movement
+    enemy.x += enemy.vx * dt * DPR;
+    enemy.y += enemy.vy * dt * DPR;
+    const pad = enemy.r + 2;
+    if(enemy.x < pad){ enemy.x=pad; enemy.vx*=-1; }
+    if(enemy.x > canvas.width - pad){ enemy.x=canvas.width - pad; enemy.vx*=-1; }
+    if(enemy.y < pad){ enemy.y=pad; enemy.vy*=-1; }
+    if(enemy.y > canvas.height - pad){ enemy.y=canvas.height - pad; enemy.vy*=-1; }
+
+    // particles
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;
+      if(p.life<=0) particles.splice(i,1);
+    }
+
+    // shake decay
+    if(shakeT>0) shakeT -= dt*1000; else shakeMag=0;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.save();
+    if(shakeMag>0){
+      const s = (shakeT/500)*shakeMag;
+      ctx.translate(rand(-s,s), rand(-s,s));
+    }
+
+    drawEnemy();
+
+    // draw particles
+    for(const p of particles){
+      const alpha = clamp(p.life/p.maxLife, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.restore();
+  }
+
+  // ===== Buttons =====
+  specialBtn.addEventListener('click', useSpecial);
+  restartBtn.addEventListener('click', ()=>{
+    score=0; level=1; scoreEl.textContent=0; levelEl.textContent=1;
+    setupEnemyForLevel(); resetOrbiters();
+    specialReady=true; setSpecialBtn();
+    showToast('Restarted');
+  });
+  pauseBtn.addEventListener('click', ()=>{
+    paused=!paused;
+    pauseBtn.textContent = paused ? '▶️ Resume' : '⏸ Pause';
+    showToast(paused?'Paused':'Resumed');
+    if(!paused && audioCtx.state==="suspended"){ audioCtx.resume().catch(()=>{}); }
+  });
+
+  startBtn.addEventListener('click', ()=>{
+    startOverlay.style.display='none';
+    paused=false; lastTime=performance.now();
+    if(audioCtx.state==="suspended"){ audioCtx.resume().catch(()=>{}); }
+    showToast('Go!');
+  });
+
+  howBtn.addEventListener('click', ()=>{
+    alert([
+      '👉 Tap/click the enemy to deal damage.',
+      '👑 Boss every 10 levels — tougher & flashy!',
+      '💥 Special hurts normal enemies (50% HP), BUT boss is IMMUNE.',
+      '📸 Upload your face, then toggle "Use Uploaded" to play against it.',
+      '⏸ Pause/↻ Restart anytime. Works on mobile too!'
+    ].join('\n'));
+  });
+
+  // ===== Upload handling =====
+  fileInput.addEventListener('change', (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        userImage = img;
+        useUpload.checked = true;
+        showToast('Face loaded & activated!');
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // Init
+  setupEnemyForLevel();
+  resetOrbiters();
+  setSpecialBtn();
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
