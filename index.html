@@ -48,6 +48,15 @@
         <p>Destroy the face with your hits!</p>
         <button class="primary-btn">Play</button>
       </article>
+
+      <!-- New: Car Racing card -->
+      <article class="card" data-target="carGame">
+        <div class="card-icon">🏎️</div>
+        <h3>Car Racing 2D</h3>
+        <p>Stylish lane-runner — collect coins & avoid obstacles.</p>
+        <button class="primary-btn">Play</button>
+      </article>
+
     </section>
   </main>
   
@@ -122,6 +131,19 @@
     </div>
     <iframe src="face.html" width="100%" height="700px" style="border:none; border-radius:18px;"></iframe>
   </section>
+  
+    <!-- Car Racing Screen (iframe) -->
+<section id="carGame" class="screen" style="display:none; padding:0; margin:0;">
+  <div style="width:100%; max-width:1100px; margin:18px auto; padding:12px;">
+    <!-- iframe loads the separate car HTML (must be in same folder) -->
+    <iframe src="2d_car.html" id="carFrame" style="width:100%; height:72vh; border:0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.4)"></iframe>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="ghost-btn" onclick="showScreen('menu')">← Back to Menu</button>
+      <button class="primary-btn" onclick="document.getElementById('carFrame').contentWindow.location.reload()">Reload Game</button>
+    </div>
+  </div>
+</section>
+
 
   <footer class="site-footer">
     <p>Made for fun • Play responsibly 😊</p>
