@@ -3,6 +3,7 @@ const menuScreen = document.getElementById('menuScreen');
 const guessingGameScreen = document.getElementById('guessingGame');
 const tttGameScreen = document.getElementById('tttGame');
 const faceGameScreen = document.getElementById('faceGame'); // 🔥 New
+const carGameScreen = document.getElementById('carGame'); // <-- new
 const backBtn = document.getElementById('backToMenu');
 
 function showScreen(id) {
@@ -10,6 +11,7 @@ function showScreen(id) {
   guessingGameScreen.style.display = id === 'guess' ? 'block' : 'none';
   tttGameScreen.style.display = id === 'ttt' ? 'block' : 'none';
   faceGameScreen.style.display = id === 'face' ? 'block' : 'none'; // 🔥 New
+  carGameScreen.style.display = id === 'car' ? 'block' : 'none'; // <-- handle car
   backBtn.style.display = id === 'menu' ? 'none' : 'inline-flex';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
