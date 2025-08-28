@@ -27,7 +27,7 @@ document.querySelectorAll('.card').forEach(card => {
     if (target === 'guessingGame') showScreen('guess');
     if (target === 'tttGame') showScreen('ttt');
     if (target === 'faceGame') showScreen('face'); // 🔥 New
-    if (target === 'carGame') showscreen('carGame'); 
+    if (target === 'carGame') showScreen('carGame'); 
   });
 });
 backBtn.addEventListener('click', () => showScreen('menu'));
