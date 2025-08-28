@@ -11,7 +11,7 @@ function showScreen(id) {
   guessingGameScreen.style.display = id === 'guess' ? 'block' : 'none';
   tttGameScreen.style.display = id === 'ttt' ? 'block' : 'none';
   faceGameScreen.style.display = id === 'face' ? 'block' : 'none'; // 🔥 New
-  carGameScreen.style.display = id === 'car' ? 'block' : 'none'; // <-- handle car
+  carGameScreen.style.display = id === 'carGame' ? 'block' : 'none'; // <-- handle car
   backBtn.style.display = id === 'menu' ? 'none' : 'inline-flex';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -27,7 +27,7 @@ document.querySelectorAll('.card').forEach(card => {
     if (target === 'guessingGame') showScreen('guess');
     if (target === 'tttGame') showScreen('ttt');
     if (target === 'faceGame') showScreen('face'); // 🔥 New
-    if (target === 'cargame') showscreen('car'); 
+    if (target === 'carGame') showscreen('carGame'); 
   });
 });
 backBtn.addEventListener('click', () => showScreen('menu'));
