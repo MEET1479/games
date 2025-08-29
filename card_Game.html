@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neon Memory — Fixed (Card Visibility)</title>
+
+  <style>
+    :root{
+      --bg:#05060a;
+      --card-bg: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      --panel: rgba(255,255,255,0.04);
+      --glass: rgba(255,255,255,0.06);
+      --text:#e9f0ff;
+      --muted:#b9c3da;
+      --accent:#7c5cff;
+      --accent2:#00eaff;
+      --good:#24e38a;
+      --bad:#ff5577;
+      --shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 40px rgba(124,92,255,.12);
+      --glass-border: rgba(255,255,255,.06);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Helvetica, Arial;
+      background:
+        radial-gradient(1000px 700px at 10% 10%, rgba(14,18,48,.9) 0%, transparent 50%),
+        radial-gradient(1200px 800px at 90% 20%, rgba(6,30,40,.7) 0%, transparent 60%),
+        var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex; flex-direction:column; min-height:100vh; align-items:center;
+      padding:20px;
+    }
+
+    /* Header / Controls */
+    header{
+      width:100%; max-width:1100px; margin-bottom:8px;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(10,11,16,.6), rgba(10,11,16,.35));
+      border:1px solid rgba(255,255,255,.03);
+      border-radius:12px; padding:12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .top{display:flex; align-items:center; gap:12px; justify-content:space-between}
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{width:44px; height:44px; border-radius:12px;
+      background: linear-gradient(135deg,var(--accent),var(--accent2));
+      display:grid; place-items:center; font-weight:900; color:#071126; box-shadow:0 6px 24px rgba(124,92,255,.2)}
+    .title{font-size:18px; font-weight:800; letter-spacing:.6px}
+    .subtitle{font-size:12px; color:var(--muted); margin-top:4px}
+
+    .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    select, button, .chip{
+      background:var(--glass); border:1px solid var(--glass-border); color:var(--text);
+      padding:8px 12px; border-radius:12px; font-size:14px; cursor:pointer; box-shadow: var(--shadow);
+    }
+    button.primary{background: linear-gradient(135deg, rgba(124,92,255,.28), rgba(0,234,255,.18)); border-color: rgba(124,92,255,.45);}
+    .chip{padding:8px 10px; display:inline-flex; align-items:center; gap:8px}
+
+    /* Main board area */
+    .main{width:100%; max-width:1100px; margin-top:18px; display:flex; gap:18px; align-items:flex-start}
+
+    /* HUD on left */
+    .hud{width:280px; min-width:220px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border-radius:12px; padding:14px; border:1px solid rgba(255,255,255,.03);
+      box-shadow: var(--shadow); display:flex; flex-direction:column; gap:10px;
+    }
+    .stat{display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:10px; background:var(--panel); font-size:14px}
+    .stat strong{font-size:13px}
+    .stars{font-size:16px; letter-spacing:2px}
+
+    /* board container */
+    .board-wrap{
+      flex:1;
+      background: linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,.02));
+      border-radius:12px; padding:18px; border:1px solid rgba(255,255,255,.03);
+      box-shadow: var(--shadow);
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+      margin-top:6px;
+      width:100%;
+      /* columns set via JS */
+      align-items:stretch;
+    }
+
+    /* CARD */
+    .cell{
+      position:relative;
+      border-radius:var(--radius);
+      overflow:visible;
+      perspective:1200px;
+      user-select:none;
+
+      /* IMPORTANT: ensure visible height on all browsers */
+      aspect-ratio: 3 / 4;      /* <-- key fix */
+      width:100%;
+      min-height: 68px;        /* fallback for older browsers */
+      display:block;
+    }
+    .card-inner{
+      width:100%; height:100%; border-radius:inherit; position:relative; transform-style:preserve-3d;
+      transition: transform 600ms cubic-bezier(.22,.9,.3,1), box-shadow 250ms;
+      box-shadow: 0 6px 18px rgba(0,0,0,.45);
+      transform: rotateY(0deg); /* initial */
+    }
+    .cell:hover .card-inner{ transform: translateY(-6px) rotateY(0deg); }
+    .face{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      border-radius:inherit; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+      font-weight:700; text-shadow: 0 6px 14px rgba(0,0,0,.45);
+      padding:6px;
+    }
+    .front{
+      background: var(--card-bg); border:1px solid rgba(255,255,255,.06); color:#d6d9e6; font-size:clamp(16px,2.2vw,22px);
+      display:flex; align-items:center; justify-content:center; gap:8px; font-weight:800;
+    }
+    .front .glyph{ font-size:clamp(22px,3.5vw,32px); opacity:.95 }
+    .back{
+      transform:rotateY(180deg);
+      background: radial-gradient(120% 120% at 0% 10%, rgba(124,92,255,.30), rgba(0,234,255,.12)),
+                  linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      border:1px solid rgba(124,92,255,.35);
+      color:white; font-size: clamp(36px, 8vw, 72px);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* flipped state */
+    .cell.flipped .card-inner{ transform: rotateY(180deg); }
+    .cell.matched .back{ outline:2px solid var(--good); box-shadow: 0 0 22px rgba(36,227,138,.25) inset; }
+
+    /* small screens */
+    @media (max-width:980px){
+      .main{flex-direction:column}
+      .hud{width:100%}
+      .board-wrap{width:100%}
+      .grid{ gap:10px }
+    }
+
+    /* dialog */
+    dialog{ border:none; border-radius:12px; padding:0; overflow:hidden; background:linear-gradient(180deg, rgba(6,6,8,.95), rgba(14,14,22,.95)); color:var(--text); box-shadow:var(--shadow)}
+    .dlg-head{padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.03); font-weight:700}
+    .dlg-body{padding:18px}
+    .dlg-actions{padding:12px 16px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid rgba(255,255,255,.03)}
+    .small{font-size:13px; color:var(--muted)}
+
+    /* confetti canvas (top) */
+    #fx{ position:fixed; inset:0; pointer-events:none; z-index:2000 }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo">NM</div>
+        <div>
+          <div class="title">Neon Memory — कार्ड फ्लिप गेम</div>
+          <div class="subtitle small">Modern • Mobile-friendly • Local high-score</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label class="small" style="color:var(--muted)">Difficulty:
+          <select id="difficulty" aria-label="Difficulty">
+            <option value="easy">Easy (4×4)</option>
+            <option value="medium" selected>Medium (5×4)</option>
+            <option value="hard">Hard (6×4)</option>
+          </select>
+        </label>
+
+        <button id="hint" title="Hint: reveal one unmatched pair">💡 Hint</button>
+        <button id="shuffle" title="Shuffle board">🔀 Shuffle</button>
+        <button id="restart" class="primary">↻ नया गेम</button>
+        <div class="chip" id="status">शुभ आरम्भ! पहला कार्ड पलटें…</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main: HUD + Board -->
+  <div class="main" role="main">
+    <aside class="hud" aria-hidden="false">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <strong>स्टेटस</strong>
+        <span class="small" id="diffLabel">Medium</span>
+      </div>
+
+      <div class="stat"><strong>⏱️ समय:</strong> <span id="time">00:00</span></div>
+      <div class="stat"><strong>🎯 मूव्स:</strong> <span id="moves">0</span></div>
+      <div class="stat"><strong>⭐ रेटिंग:</strong> <span id="rating" class="stars">★★★</span></div>
+      <div class="stat"><strong>🏆 बेस्ट:</strong> <span id="best">—</span></div>
+
+      <div style="margin-top:6px">
+        <button id="toggleSound">🔊 Sound: ON</button>
+      </div>
+
+      <div style="margin-top:12px; font-size:13px;">
+        <div style="font-weight:700; margin-bottom:6px">Controls</div>
+        <div class="small">Hint shows a pair for 1s. Shuffle rearranges cards. Restart starts a new board.</div>
+      </div>
+    </aside>
+
+    <section class="board-wrap" aria-live="polite">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-weight:700">Board</div>
+        <div class="small" id="pairsInfo">Pairs: 10</div>
+      </div>
+
+      <div id="grid" class="grid" role="grid" aria-label="Memory cards board"></div>
+    </section>
+  </div>
+
+  <footer style="margin-top:18px; color:var(--muted); font-size:13px; text-align:center; width:100%; max-width:1100px">
+    <div>Design: Neon Glassmorphism • Built-in confetti & high-score</div>
+  </footer>
+
+  <dialog id="win">
+    <div class="dlg-head">🎉 कमाल! आपने जीत लिया।</div>
+    <div class="dlg-body">
+      <p id="summary">—</p>
+      <p class="small">आपका स्कोर localStorage में सेव कर दिया गया है।</p>
+    </div>
+    <div class="dlg-actions">
+      <button id="closeWin">बंद करें</button>
+      <button id="playAgain" class="primary">फिर से खेलें</button>
+    </div>
+  </dialog>
+
+  <canvas id="fx"></canvas>
+
+  <script>
+    /* (JS सभी features के साथ वैसा का वैसा है — सिर्फ़ CSS fix applied) */
+
+    const ICONS = ['🐯','🐉','⚡','🔥','💧','🌿','🌪️','🪨','⭐','🎭','🧠','🛰️','🛡️','🕊️','👑','🧿','🌀','🌈','🌙','☀️','❄️','🌋','🧲','⌛'];
+
+    const grid = document.getElementById('grid');
+    const movesEl = document.getElementById('moves');
+    const timeEl = document.getElementById('time');
+    const ratingEl = document.getElementById('rating');
+    const bestEl = document.getElementById('best');
+    const statusEl = document.getElementById('status');
+    const diffSelect = document.getElementById('difficulty');
+    const diffLabel = document.getElementById('diffLabel');
+    const pairsInfo = document.getElementById('pairsInfo');
+    const hintBtn = document.getElementById('hint');
+    const shuffleBtn = document.getElementById('shuffle');
+    const restartBtn = document.getElementById('restart');
+    const winDlg = document.getElementById('win');
+    const closeWin = document.getElementById('closeWin');
+    const playAgain = document.getElementById('playAgain');
+    const toggleSoundBtn = document.getElementById('toggleSound');
+    const fx = document.getElementById('fx');
+    const ctx = fx.getContext('2d');
+
+    let state = {
+      diff: 'medium',
+      pairs: 10,
+      deck: [],
+      opened: [],
+      matchedCount: 0,
+      moves: 0,
+      timerId: null,
+      startTs: null,
+      elapsed: 0,
+      busy: false,
+      sound: true
+    };
+
+    function resizeCanvas(){ fx.width = innerWidth; fx.height = innerHeight; }
+    addEventListener('resize', resizeCanvas); resizeCanvas();
+
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i], a[j]] = [a[j], a[i]]; }
+      return a;
+    }
+    function formatTime(sec){ const m = Math.floor(sec/60).toString().padStart(2,'0'); const s = Math.floor(sec%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+
+    function playBeep(freq=300, duration=0.08, vol=0.08){
+      if(!state.sound) return;
+      try{
+        const A = new (window.AudioContext || window.webkitAudioContext)();
+        const o = A.createOscillator(); const g = A.createGain();
+        o.connect(g); g.connect(A.destination); o.type='sine'; o.frequency.value=freq; g.gain.value=vol;
+        o.start();
+        setTimeout(()=>{ o.stop(); A.close(); }, duration*1000);
+      }catch(e){}
+    }
+
+    function setDifficulty(v){ state.diff = v; if(v==='easy') state.pairs=8; else if(v==='medium') state.pairs=10; else state.pairs=12; diffLabel.textContent = v[0].toUpperCase()+v.slice(1); pairsInfo.textContent = `Pairs: ${state.pairs}`; }
+
+    function buildDeck(){ const pool = shuffle(ICONS).slice(0, state.pairs); const deck = shuffle([...pool, ...pool]); state.deck = deck; return deck; }
+    function clearBoard(){ grid.innerHTML = ''; grid.style.gridTemplateColumns = `repeat(${ state.pairs === 8 ? 4 : state.pairs === 10 ? 5 : 6 }, 1fr)`; }
+
+    function createCard(icon, idx){
+      const cell = document.createElement('div');
+      cell.className = 'cell'; cell.setAttribute('role','button'); cell.setAttribute('aria-label','कार्ड');
+      cell.dataset.value = icon; cell.dataset.index = idx;
+      const inner = document.createElement('div'); inner.className = 'card-inner';
+      const front = document.createElement('div'); front.className = 'face front'; front.innerHTML = `<span class="glyph">❖</span>`;
+      const back = document.createElement('div'); back.className = 'face back'; back.textContent = icon;
+      inner.appendChild(front); inner.appendChild(back); cell.appendChild(inner);
+      cell.addEventListener('click', ()=> onFlip(cell));
+      return cell;
+    }
+
+    function startTimer(){ if(state.timerId) return; state.startTs = Date.now(); state.timerId = setInterval(()=>{ state.elapsed = (Date.now() - state.startTs)/1000; timeEl.textContent = formatTime(state.elapsed); }, 250); }
+    function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId=null; } }
+    function resetHUD(){ stopTimer(); state.elapsed=0; timeEl.textContent='00:00'; state.moves=0; movesEl.textContent='0'; ratingEl.textContent='★'.repeat(3); state.opened=[]; state.matchedCount=0; state.busy=false; statusEl.textContent='शुभ आरम्भ! पहला कार्ड पलटें…'; updateBestDisplay(); }
+    function updateMoves(){ movesEl.textContent = state.moves; starRating(state.moves); }
+    function starRating(m){ const th = state.diff==='easy'? [12,18] : state.diff==='medium'? [18,26] : [26,36]; let stars=1; if(m<=th[1]) stars=2; if(m<=th[0]) stars=3; ratingEl.textContent='★'.repeat(stars)+String('☆').repeat(3-stars); return stars; }
+    function bestKey(){ return `neon-mem-best-${state.diff}`; }
+    function setBestIfNeeded(time,moves){ const key = bestKey(); const cur = JSON.parse(localStorage.getItem(key) || 'null'); const data={time,moves}; if(!cur || time<cur.time || (time===cur.time && moves<cur.moves)) localStorage.setItem(key, JSON.stringify(data)); updateBestDisplay(); }
+    function updateBestDisplay(){ const key=bestKey(); const cur=JSON.parse(localStorage.getItem(key)||'null'); bestEl.textContent = cur? `${formatTime(cur.time)} • ${cur.moves} moves` : '—'; }
+
+    function renderBoard(){ clearBoard(); const deck = buildDeck(); deck.forEach((icon, idx)=>{ const c = createCard(icon, idx); grid.appendChild(c); }); }
+
+    function onFlip(cell){
+      if(state.busy) return;
+      if(cell.classList.contains('flipped') || cell.classList.contains('matched')) return;
+      if(!state.startTs) startTimer();
+      cell.classList.add('flipped'); playBeep(420, .06, .05);
+      state.opened.push(cell);
+      if(state.opened.length === 2){
+        state.moves += 1; updateMoves();
+        const [a,b] = state.opened;
+        if(a.dataset.value === b.dataset.value){
+          a.classList.add('matched'); b.classList.add('matched'); state.opened=[]; state.matchedCount += 1; flashStatus('✅ मैच!','good'); playBeep(720, .08, .08);
+          if(state.matchedCount === state.pairs){ setTimeout(onWin, 350); }
+        } else {
+          state.busy = true; a.classList.add('wrong'); b.classList.add('wrong'); flashStatus('❌ मेल नहीं खाया','bad'); playBeep(180, .08, .06);
+          setTimeout(()=>{ a.classList.remove('flipped','wrong'); b.classList.remove('flipped','wrong'); state.opened=[]; state.busy=false; }, 700);
+        }
+      }
+    }
+
+    function flashStatus(text, kind){
+      statusEl.textContent = text;
+      statusEl.style.borderColor = kind==='good'? 'rgba(36,227,138,.6)' : 'rgba(255,85,119,.6)';
+      statusEl.style.boxShadow = kind==='good'? '0 0 20px rgba(36,227,138,.25)' : '0 0 20px rgba(255,85,119,.18)';
+      clearTimeout(flashStatus._t);
+      flashStatus._t = setTimeout(()=>{ statusEl.textContent = 'कार्ड पलटें…'; statusEl.style.borderColor=''; statusEl.style.boxShadow=''; }, 1200);
+    }
+
+    function onWin(){ stopTimer(); const t = Math.round(state.elapsed); const s = starRating(state.moves); setBestIfNeeded(t, state.moves); document.getElementById('summary').textContent = `समय: ${formatTime(t)} | मूव्स: ${state.moves} | ⭐: ${s}/3`; winDlg.showModal(); confettiBurst(); playBeep(880, .2, .12); }
+
+    function hintOnce(){ if(state.busy) return; const cells = Array.from(grid.querySelectorAll('.cell:not(.matched)')); if(cells.length < 2) return; const map={}; cells.forEach(c=> map[c.dataset.value]=(map[c.dataset.value]||[]).concat(c)); const pairs = Object.values(map).filter(arr=>arr.length>=2); if(pairs.length===0) return; const pair = pairs[Math.floor(Math.random()*pairs.length)]; const [c1,c2]=pair; c1.classList.add('flipped','hint'); c2.classList.add('flipped','hint'); playBeep(560,.06,.06); setTimeout(()=>{ c1.classList.remove('flipped','hint'); c2.classList.remove('flipped','hint'); }, 900); }
+
+    function shuffleBoard(){ if(state.busy) return; state.busy=true; const cells = Array.from(grid.children); const icons = cells.map(c=>c.dataset.value); const newOrder = shuffle(icons); cells.forEach((c, idx)=>{ c.classList.add('shuffling'); c.classList.remove('flipped'); }); setTimeout(()=>{ cells.forEach((c, idx)=>{ c.dataset.value = newOrder[idx]; c.querySelector('.back').textContent = newOrder[idx]; c.classList.remove('shuffling'); }); state.busy=false; flashStatus('🔀 शफल किया गया','good'); }, 320); playBeep(360,.08,.06); }
+
+    let particles=[], rafId=null, lastTs=0;
+    function confettiBurst(){ const count=220; const colors=['#7c5cff','#00eaff','#24e38a','#ff5577','#ffd166']; for(let i=0;i<count;i++){ particles.push({ x: fx.width/2 + (Math.random()*300-150), y: fx.height/3 + (Math.random()*40-20), vx: (Math.random()*10-5), vy: (Math.random()*-8-4), g: 0.12 + Math.random()*0.08, s: 2 + Math.random()*4, a: 1, c: colors[(Math.random()*colors.length)|0], life: 60 + Math.random()*40 }); } if(!rafId){ lastTs = performance.now(); rafId = requestAnimationFrame(loop); } }
+    function loop(ts){ const dt = Math.min(32, ts - lastTs); lastTs = ts; ctx.clearRect(0,0,fx.width,fx.height); particles = particles.filter(p=>p.a>0 && p.life>0); for(const p of particles){ p.life -= dt/16; p.vy += p.g; p.x += p.vx; p.y += p.vy; p.a -= 0.008; ctx.globalAlpha = Math.max(0, p.a); ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.s, p.s*2); } if(particles.length){ rafId = requestAnimationFrame(loop); } else { cancelAnimationFrame(rafId); rafId = null; } }
+
+    diffSelect.addEventListener('change', (e)=>{ setDifficulty(e.target.value); newGame(); });
+    hintBtn.addEventListener('click', hintOnce);
+    shuffleBtn.addEventListener('click', shuffleBoard);
+    restartBtn.addEventListener('click', ()=>{ newGame(); playBeep(300,.06,.05); });
+    closeWin.addEventListener('click', ()=> winDlg.close());
+    playAgain.addEventListener('click', ()=>{ winDlg.close(); newGame(); });
+    toggleSoundBtn.addEventListener('click', ()=>{ state.sound = !state.sound; toggleSoundBtn.textContent = state.sound ? '🔊 Sound: ON' : '🔈 Sound: OFF'; });
+
+    addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='h') hintOnce(); if(e.key.toLowerCase()==='r') newGame(); });
+
+    function newGame(){ setDifficulty(state.diff); resetHUD(); renderBoard(); revealAllBriefly(); }
+    function revealAllBriefly(){ const cells = Array.from(grid.querySelectorAll('.cell')); cells.forEach(c=>c.classList.add('flipped')); setTimeout(()=>{ cells.forEach(c=>c.classList.remove('flipped')); }, 650); }
+
+    setDifficulty(diffSelect.value); updateBestDisplay(); newGame();
+    function adjustCardSizes(){} addEventListener('resize', adjustCardSizes);
+
+  </script>
+</body>
+</html>
