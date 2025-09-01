@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Ad code kept intact and untouched -->
+  <script async="async" data-cfasync="false" src="//pl27399848.profitableratecpm.com/e73c5bd73431d92f02cf43ba7f09b047/invoke.js"></script>
+  <div id="container-e73c5bd73431d92f02cf43ba7f09b047"></div>
+  
+  <script async="async" data-cfasync="false" src="//pl27399848.profitableratecpm.com/e73c5bd73431d92f02cf43ba7f09b047/invoke.js"></script>
+<div id="container-e73c5bd73431d92f02cf43ba7f09b047"></div>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fun Mini Games — Number Guess, Tic Tac Toe & Face Hit</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="brand">🎮 Fun Mini Games</h1>
+    <button class="ghost-btn" id="backToMenu" aria-label="Back to menu" style="display:none">← Back to Menu</button>
+  </header>
+
+  <!-- Game Selection Screen -->
+  <main id="menuScreen" class="container">
+    <section class="hero">
+      <h2>Pick a Game</h2>
+      <p>Choose your vibe and start playing!</p>
+    </section>
+
+    <section class="cards">
+      <article class="card" data-target="guessingGame">
+        <div class="card-icon">🎯</div>
+        <h3>Number Guess</h3>
+        <p>Guess the secret number and climb the ranks.</p>
+        <button class="primary-btn">Play</button>
+      </article>
+
+      <article class="card" data-target="tttGame">
+        <div class="card-icon">❌⭕</div>
+        <h3>Tic Tac Toe</h3>
+        <p>Play vs AI or 2 Players with neon vibes.</p>
+        <button class="primary-btn">Play</button>
+      </article>
+
+      <!-- New Face Hit Game Card -->
+      <article class="card" data-target="faceGame">
+        <div class="card-icon">👊</div>
+        <h3>Face Hit</h3>
+        <p>Destroy the face with your hits!</p>
+        <button class="primary-btn">Play</button>
+      </article>
+
+      <!-- New: Car Racing card -->
+      <article class="card" data-target="carGame">
+        <div class="card-icon">🏎️</div>
+        <h3>Car Racing 2D</h3>
+        <p>Stylish lane-runner — collect coins & avoid obstacles.</p>
+        <button class="primary-btn">Play</button>
+      </article>
+      
+      <article class="card" data-target="cardGame">
+        <div class="card-icon">🎴🃏</div>
+        <h3>memory_card_Game</h3>
+        <p>a simple game card flip and memory increass</p>
+        <button class="primary-btn">Play</button>
+      </article>
+
+    </section>
+  </main>
+  
+  <script async="async" data-cfasync="false" src="//pl27399848.profitableratecpm.com/e73c5bd73431d92f02cf43ba7f09b047/invoke.js"></script>
+<div id="container-e73c5bd73431d92f02cf43ba7f09b047"></div>
+
+  <!-- Number Guessing Game Screen -->
+  <section id="guessingGame" class="screen" style="display:none">
+    <div class="game-header">
+      <h2>🎯 Number Guessing Game</h2>
+      <p>I have selected a number between <b>1 and 100</b>. Can you guess it?</p>
+    </div>
+
+    <div class="guess-panel">
+      <input type="number" id="guessInput" placeholder="Enter your guess (1–100)" />
+      <button id="guessBtn" class="primary-btn">Guess</button>
+      <button id="resetGuess" class="ghost-btn">Reset</button>
+    </div>
+
+    <div class="status">
+      <p id="result"></p>
+      <p id="attempts">Attempts: 0</p>
+      <div class="score-wrap">
+        <div class="score-line"><span>Points:</span> <b id="points">0</b></div>
+        <div class="score-line"><span>Rank:</span> <b id="rank">—</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tic Tac Toe Screen -->
+  <section id="tttGame" class="screen" style="display:none">
+    <div class="game-header">
+      <h2>❌⭕ Tic Tac Toe</h2>
+      <p>Play vs AI or with a friend on the same device.</p>
+    </div>
+
+    <div class="mode-panel">
+      <div class="mode-group">
+        <label><input type="radio" name="mode" value="ai" checked /> Single Player (AI)</label>
+        <label><input type="radio" name="mode" value="2p" /> Two Player</label>
+      </div>
+      <div class="side-group" id="sideGroup">
+        <span>Play as:</span>
+        <label><input type="radio" name="playerSide" value="X" checked /> X</label>
+        <label><input type="radio" name="playerSide" value="O" /> O</label>
+      </div>
+      <button id="resetTTT" class="ghost-btn">Reset</button>
+    </div>
+
+    <div class="ttt-board" id="board">
+      <button class="cell" data-idx="0"></button>
+      <button class="cell" data-idx="1"></button>
+      <button class="cell" data-idx="2"></button>
+      <button class="cell" data-idx="3"></button>
+      <button class="cell" data-idx="4"></button>
+      <button class="cell" data-idx="5"></button>
+      <button class="cell" data-idx="6"></button>
+      <button class="cell" data-idx="7"></button>
+      <button class="cell" data-idx="8"></button>
+    </div>
+
+    <div class="status">
+      <p id="tttStatus">Your move!</p>
+    </div>
+  </section>
+
+  <!-- Face Hit Game Screen -->
+  <section id="faceGame" class="screen" style="display:none">
+    <div class="game-header">
+      <h2>👊 Face Hit — Boss Edition</h2>
+      <p>Tap/click to hit the face. Boss appears every 10 levels!</p>
+    </div>
+    <iframe src="face.html" width="100%" height="700px" style="border:none; border-radius:18px;"></iframe>
+  </section>
+  
+    <!-- Car Racing Screen (iframe) -->
+<section id="carGame" class="screen" style="display:none; padding:0; margin:0;">
+  <div style="width:100%; max-width:1100px; margin:18px auto; padding:12px;">
+    <!-- iframe loads the separate car HTML (must be in same folder) -->
+    <iframe src="2d_car.html" id="carFrame" style="width:100%; height:72vh; border:0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.4)"></iframe>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="ghost-btn" onclick="showScreen('menu')">← Back to Menu</button>
+      <button class="primary-btn" onclick="document.getElementById('carFrame').contentWindow.location.reload()">Reload Game</button>
+    </div>
+  </div>
+</section>
+<section id="cardGame" class="screen" style="display:none; padding:0; margin:0;">
+  <div style="width:100%; max-width:1100px; margin:18px auto; padding:12px;">
+    <!-- iframe loads the separate car HTML (must be in same folder) -->
+    <iframe src="card_Game.html" id="cardFrame" style="width:100%; height:72vh; border:0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.4)"></iframe>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="ghost-btn" onclick="showScreen('menu')">← Back to Menu</button>
+      <button class="primary-btn" onclick="document.getElementById('carFrame').contentWindow.location.reload()">Reload Game</button>
+    </div>
+  </div>
+</section>
+
+
+  <footer class="site-footer">
+    <p>Made for fun • Play responsibly 😊</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
