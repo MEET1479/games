@@ -5,6 +5,7 @@ const tttGameScreen = document.getElementById('tttGame');
 const faceGameScreen = document.getElementById('faceGame'); // 🔥 New
 const carGameScreen = document.getElementById('carGame');// <-- new
 const cardGameScreen = document.getElementById('cardGame');
+const spaceGameScreen = document.getElementById('spaceGame');
 const backBtn = document.getElementById('backToMenu');
 
 function showScreen(id) {
@@ -14,6 +15,7 @@ function showScreen(id) {
   faceGameScreen.style.display = id === 'face' ? 'block' : 'none'; // 🔥 New
   carGameScreen.style.display = id === 'carGame' ? 'block' : 'none'; // <-- handle car
   cardGameScreen.style.display = id === 'cardGame' ? 'block' : 'none';
+  spaceGameScreen.style.display = id === 'spaceGame' ? 'block' : 'none';
   backBtn.style.display = id === 'menu' ? 'none' : 'inline-flex';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -31,6 +33,7 @@ document.querySelectorAll('.card').forEach(card => {
     if (target === 'faceGame') showScreen('face'); // 🔥 New
     if (target === 'carGame') showScreen('carGame'); 
     if (target === 'cardGame') showScreen('cardGame');
+    if (target === 'spaceGame') showScreen('spaceGame');
   });
 });
 backBtn.addEventListener('click', () => showScreen('menu'));
