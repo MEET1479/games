@@ -17,87 +17,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fun Mini Games — Number Guess, Tic Tac Toe & Face Hit</title>
   <link rel="stylesheet" href="style.css" />
-
-  <script>
-  atOptions = {
-    'key' : '19761db1332e7ecbe5f1fa4564109824',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highrevenueformat.com/19761db1332e7ecbe5f1fa4564109824/invoke.js"></script>
-<script>
-  atOptions = {
-    'key' : '19761db1332e7ecbe5f1fa4564109824',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highrevenueformat.com/19761db1332e7ecbe5f1fa4564109824/invoke.js"></script>
-
 </head>
 <body>
   <header class="site-header">
-    <h1 class="brand">🎮 Fun Mini Games</h1>
-    <button class="ghost-btn" id="backToMenu" aria-label="Back to menu" style="display:none">← Back to Menu</button>
+    <div class="brand">🎮 <span>FUN MINI GAMES</span></div>
+    <div class="brand-sub">NO DOWNLOAD • INSTANT PLAY</div>
+    <button class="ghost-btn" id="backToMenu" aria-label="Back to menu" style="display:none">← MENU</button>
   </header>
 
   <!-- Game Selection Screen -->
   <main id="menuScreen" class="container">
     <section class="hero">
-      <h2>Pick a Game</h2>
-      <p>Choose your vibe and start playing!</p>
+      <div class="hero-glow">⚡ WELCOME TO THE ARCADE ⚡</div>
+      <h2>FUN MINI GAMES</h2>
+      <p>— No Download, Instant Play —</p>
+      <div class="site-url">meet1479.github.io</div>
     </section>
 
     <section class="cards">
-      <article class="card" data-target="guessingGame">
-        <div class="card-icon">🎯</div>
+      <article class="card" data-target="tttGame" tabindex="0" role="button" aria-label="Play Tic Tac Toe">
+        <div class="card-art ttt-art"><span>✕</span><span>○</span><span>✕</span></div>
+        <h3>Tic Tac Toe XO</h3>
+        <p>Play vs AI or a friend</p>
+        <button class="primary-btn">PLAY NOW</button>
+      </article>
+
+      <article class="card" data-target="guessingGame" tabindex="0" role="button" aria-label="Play Number Guess">
+        <div class="card-art guess-art"><b>?</b><i>1</i><i>7</i><i>9</i></div>
         <h3>Number Guess</h3>
-        <p>Guess the secret number and climb the ranks.</p>
-        <button class="primary-btn">Play</button>
+        <p>Guess the secret number</p>
+        <button class="primary-btn">PLAY NOW</button>
       </article>
 
-      <article class="card" data-target="tttGame">
-        <div class="card-icon">❌⭕</div>
-        <h3>Tic Tac Toe</h3>
-        <p>Play vs AI or 2 Players with neon vibes.</p>
-        <button class="primary-btn">Play</button>
+      <article class="card" data-target="carGame" tabindex="0" role="button" aria-label="Play Car Racing">
+        <div class="card-art car-art"><b>🏎️</b><span>🏁</span></div>
+        <h3>Car Racing</h3>
+        <p>Race and avoid obstacles</p>
+        <button class="primary-btn">PLAY NOW</button>
       </article>
 
-      <!-- New Face Hit Game Card -->
-      <article class="card" data-target="faceGame">
-        <div class="card-icon">👊</div>
+      <article class="card" data-target="faceGame" tabindex="0" role="button" aria-label="Play Face Hit">
+        <div class="card-art face-art"><b>😄</b><span>🎯</span></div>
         <h3>Face Hit</h3>
-        <p>Destroy the face with your hits!</p>
-        <button class="primary-btn">Play</button>
+        <p>Hit the target as fast as you can</p>
+        <button class="primary-btn">PLAY NOW</button>
       </article>
 
-      <!-- New: Car Racing card -->
-      <article class="card" data-target="carGame">
-        <div class="card-icon">🏎️</div>
-        <h3>Car Racing 2D</h3>
-        <p>Stylish lane-runner — collect coins & avoid obstacles.</p>
-        <button class="primary-btn">Play</button>
-      </article>
-      <!-- card_game -->
-      <article class="card" data-target="cardGame">
-        <div class="card-icon">🎴🃏</div>
-        <h3>memory_card_Game</h3>
-        <p>a simple game card flip and memory increass</p>
-        <button class="primary-btn">Play</button>
-      </article>
-      <article class="card" data-target="spaceGame">
-        <div class="card-icon">🚀👾</div>
-        <h3>🚀space Game </h3>
-        <p>a action game space X</p>
-        <button class="primary-btn">Play</button>
+      <article class="card" data-target="cardGame" tabindex="0" role="button" aria-label="Play Memory Cards">
+        <div class="card-art memory-art"><b>🃏</b><span>🎴</span></div>
+        <h3>Memory Cards</h3>
+        <p>Flip cards and find matching pairs</p>
+        <button class="primary-btn">PLAY NOW</button>
       </article>
 
+      <article class="card" data-target="spaceGame" tabindex="0" role="button" aria-label="Play Space Game">
+        <div class="card-art space-art"><b>🚀</b><span>👾</span></div>
+        <h3>Space Game</h3>
+        <p>Action-packed space adventure</p>
+        <button class="primary-btn">PLAY NOW</button>
+      </article>
     </section>
+
+    <section class="play-banner">
+      <strong>PLAY NOW</strong>
+      <span>• 100% FREE • MOBILE READY •</span>
+    </section>
+    <div class="mini-tagline">🎮 Instant • Fun • Free • No App Needed 🚀</div>
   </main>
   
   <script async="async" data-cfasync="false" src="//pl27399848.profitableratecpm.com/e73c5bd73431d92f02cf43ba7f09b047/invoke.js"></script>
@@ -211,5 +196,62 @@
   </footer>
 
   <script src="script.js"></script>
+
+  <script>
+  (function () {
+    function openGame(target) {
+      var menu = document.getElementById('menuScreen');
+      var screens = document.querySelectorAll('.screen');
+      var back = document.getElementById('backToMenu');
+      var game = document.getElementById(target);
+
+      if (!game) {
+        console.error('Game screen not found:', target);
+        return;
+      }
+
+      if (menu) menu.style.display = 'none';
+      screens.forEach(function (s) { s.style.display = 'none'; });
+      game.style.display = 'block';
+      if (back) back.style.display = 'inline-block';
+      window.scrollTo(0, 0);
+    }
+
+    function openMenu() {
+      var menu = document.getElementById('menuScreen');
+      var screens = document.querySelectorAll('.screen');
+      var back = document.getElementById('backToMenu');
+
+      screens.forEach(function (s) { s.style.display = 'none'; });
+      if (menu) menu.style.display = 'block';
+      if (back) back.style.display = 'none';
+      window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.card[data-target]').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          if (e.target.closest('button')) e.preventDefault();
+          openGame(card.getAttribute('data-target'));
+        });
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openGame(card.getAttribute('data-target'));
+          }
+        });
+      });
+
+      var back = document.getElementById('backToMenu');
+      if (back) back.addEventListener('click', openMenu);
+
+      document.querySelectorAll('.screen .ghost-btn').forEach(function (btn) {
+        if (btn.id !== 'backToMenu') {
+          btn.addEventListener('click', function () { openMenu(); });
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
